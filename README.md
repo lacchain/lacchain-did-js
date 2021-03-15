@@ -1,6 +1,6 @@
 # LACChain DID Method
 
-[DID Specification](http://dev.lacchain.net/en/ssi/lacchain-did) | [ERC-1056](https://github.com/ethereum/EIPs/issues/1056)
+[DID Specification](http://dev.lacchain.net/en/did-method) | [ERC-1056](https://github.com/ethereum/EIPs/issues/1056)
 
 This library is based on [ERC-1056](https://github.com/ethereum/EIPs/issues/1056) and is intended to use Ethereum addresses as fully self-managed [Decentralized Identifiers](https://w3c-ccg.github.io/did-spec/#decentralized-identifiers-dids) (DIDs), it allows you to easily create and manage keys for these identities.  
 It also lets you sign standards compliant [JSON Web Tokens (JWT)](https://jwt.io).

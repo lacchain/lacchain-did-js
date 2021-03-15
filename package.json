@@ -1,6 +1,6 @@
 {
 	"name": "@lacchain/did",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "The LACChain DID method",
 	"author": "Sergio Ceron Figueroa <sergioce@iadb.org>",
 	"keywords": [
