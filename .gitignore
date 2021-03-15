@@ -1,0 +1,9 @@
+node_modules
+seed
+coverage.json
+*.log
+.idea
+*.iml
+build
+.nyc_output
+truffle-config.js

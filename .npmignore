@@ -1,0 +1,13 @@
+.github
+.idea
+*.iml
+node_modules
+contracts
+build
+.nyc_output
+coverage
+*.lcov
+migrations
+./test
+*.png
+truffle-config.default
