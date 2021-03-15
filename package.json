@@ -13,7 +13,7 @@
 		"smart-contracts",
 		"lacchain"
 	],
-	"homepage": "http://dev.lacchain.net/e/en/ssi/lacchain-did",
+	"homepage": "http://dev.lacchain.net/en/did-method",
 	"type": "module",
 	"scripts": {
 		"test": "./node_modules/mocha/bin/mocha --experimental-json-modules --timeout 20000 --ui bdd ./lib/test/**",
@@ -47,9 +47,9 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/lacchain/did.git"
+		"url": "git+https://github.com/lacchain/did-method.git"
 	},
 	"bugs": {
-		"url": "https://github.com/lacchain/did/issues"
+		"url": "https://github.com/lacchain/did-method/issues"
 	}
 }

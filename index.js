@@ -1,2 +1,2 @@
-export LACChainDID from './lib/did';
-export * as Resolver from './lib/resolver';
+export * as LACChainDID from './lib/did.js';
+export * as Resolver from './lib/resolver.js';
