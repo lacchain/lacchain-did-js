@@ -1,87 +1,177 @@
-pragma solidity ^0.5.16;
+//SPDX-License-Identifier: UNLICENSED
 
-contract DIDRegistry {
+pragma solidity >=0.6.0 <0.7.0;
 
-	mapping(address => address) public controllers;
-	mapping(address => uint) public changed;
-	mapping(address => uint) public nonce;
+import "./SafeMath.sol";
+import "./IDIDRegistry.sol";
 
-	modifier onlyController(address identity, address actor) {
-		require (actor == identityController(identity));
-		_;
-	}
+contract DIDRegistry is IDIDRegistry {
 
-	event DIDControllerChanged(
-		address indexed identity,
-		address controller,
-		uint previousChange
-	);
+    using SafeMath for uint256;
 
-	event DIDAttributeChanged(
-		address indexed identity,
-		bytes32 name,
-		bytes value,
-		address controller,
-		uint validTo,
-		uint previousChange
-	);
+    mapping(address => address[]) public controllers;
+    mapping(address => DIDConfig) private configs;
+    mapping(address => uint) public changed;
+    mapping(address => uint) public nonce;
 
-	function identityController(address identity) public view returns(address) {
-		address controller = controllers[identity];
-		if (controller != address(0)) {
-			return controller;
-		}
-		return identity;
-	}
+    uint private minKeyRotationTime;
 
-	function checkSignature(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, bytes32 hash) internal returns(address) {
-		address signer = ecrecover(hash, sigV, sigR, sigS);
-		require(signer == identityController(identity));
-		nonce[signer]++;
-		return signer;
-	}
+    constructor( uint _minKeyRotationTime ) public {
+        minKeyRotationTime = _minKeyRotationTime;
+    }
 
-	function changeController(address identity, address actor, address newController) internal onlyController(identity, actor) {
-		controllers[identity] = newController;
-		emit DIDControllerChanged(identity, newController, changed[identity]);
-		changed[identity] = block.number;
-	}
+    modifier onlyController(address identity, address actor) {
+        require(actor == identityController(identity));
+        _;
+    }
 
-	function changeController(address identity, address newController) public {
-		changeController(identity, msg.sender, newController);
-	}
+    function getControllers() public view returns (address[] memory) {
+        return controllers[msg.sender];
+    }
 
-	function changeControllerSigned(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, address newController) public {
-		bytes32 hash = keccak256(abi.encodePacked(byte(0x19), byte(0), this, nonce[identityController(identity)], identity, "changeController", newController));
-		changeController(identity, checkSignature(identity, sigV, sigR, sigS, hash), newController);
-	}
+    function identityController(address identity) public view returns (address) {
+        uint len = controllers[identity].length;
+        if (len == 0) return identity;
+        if (len == 1) return controllers[identity][0];
+        DIDConfig storage config = configs[identity];
+        address controller = address(0);
+        if( config.automaticRotation ){
+            uint currentController = block.timestamp.div( config.keyRotationTime ).mod( len );
+            controller = controllers[identity][currentController];
+        } else {
+            if( config.currentController >= len ){
+                controller = controllers[identity][0];
+            } else {
+                controller = controllers[identity][config.currentController];
+            }
+        }
+        if (controller != address(0)) return controller;
+        return identity;
+    }
 
-	function setAttribute(address identity, address actor, bytes32 name, bytes memory value, address controller, uint validity ) internal onlyController(identity, actor) {
-		emit DIDAttributeChanged(identity, name, value, controller, now + validity, changed[identity]);
-		changed[identity] = block.number;
-	}
+    function checkSignature(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, bytes32 hash) internal returns (address) {
+        address signer = ecrecover(hash, sigV, sigR, sigS);
+        require(signer == identityController(identity));
+        nonce[signer]++;
+        return signer;
+    }
 
-	function setAttribute(address identity, bytes32 name, bytes memory value, address controller, uint validity) public {
-		setAttribute(identity, msg.sender, name, value, controller, validity);
-	}
+    function setCurrentController(address identity, uint index) internal {
+        DIDConfig storage config = configs[identity];
+        config.currentController = index;
+    }
 
-	function setAttributeSigned(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, bytes32 name, bytes memory value, address controller, uint validity) public {
-		bytes32 hash = keccak256(abi.encodePacked(byte(0x19), byte(0), this, nonce[identityController(identity)], identity, "setAttribute", name, value, validity));
-		setAttribute(identity, checkSignature(identity, sigV, sigR, sigS, hash), name, value, controller, validity);
-	}
+    function _getControllerIndex(address identity, address controller) internal view returns (int) {
+        for (uint i = 0; i < controllers[identity].length; i++) {
+            if (controllers[identity][i] == controller) {
+                return int(i);
+            }
+        }
+        return - 1;
+    }
 
-	function revokeAttribute(address identity, address actor, bytes32 name, bytes memory value ) internal onlyController(identity, actor) {
-		emit DIDAttributeChanged(identity, name, value, address(0), 0, changed[identity]);
-		changed[identity] = block.number;
-	}
+    function addController(address identity, address actor, address newController) internal onlyController(identity, actor) {
+        int controllerIndex = _getControllerIndex(identity, newController);
 
-	function revokeAttribute(address identity, bytes32 name, bytes memory value) public {
-		revokeAttribute(identity, msg.sender, name, value);
-	}
+        if (controllerIndex < 0) {
+            if( controllers[identity].length == 0 ){
+                controllers[identity].push( identity );
+            }
+            controllers[identity].push( newController );
+        }
+    }
 
-	function revokeAttributeSigned(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, bytes32 name, bytes memory value) public {
-		bytes32 hash = keccak256(abi.encodePacked(byte(0x19), byte(0), this, nonce[identityController(identity)], identity, "revokeAttribute", name, value));
-		revokeAttribute(identity, checkSignature(identity, sigV, sigR, sigS, hash), name, value);
-	}
+    function removeController(address identity, address actor, address controller) internal onlyController(identity, actor) {
+        require( controllers[identity].length > 1, 'You need at least two controllers to delete' );
+        require( identityController(identity) != controller , 'You cannot delete current controller' );
+        int controllerIndex = _getControllerIndex(identity, controller);
+
+        require( controllerIndex >= 0, 'Controller not exist' );
+
+        uint len = controllers[identity].length;
+        address lastController = controllers[identity][len - 1];
+        controllers[identity][uint(controllerIndex)] = lastController;
+        if( lastController == identityController(identity) ){
+            configs[identity].currentController = uint(controllerIndex);
+        }
+        delete controllers[identity][len - 1];
+        controllers[identity].pop();
+    }
+
+    function changeController(address identity, address actor, address newController) internal onlyController(identity, actor) {
+        int controllerIndex = _getControllerIndex(identity, newController);
+
+        require( controllerIndex >= 0, 'Controller not exist' );
+
+        if (controllerIndex >= 0) {
+            setCurrentController(identity, uint(controllerIndex));
+
+            emit DIDControllerChanged(identity, newController, changed[identity]);
+            changed[identity] = block.number;
+        }
+    }
+
+    function enableKeyRotation(address identity, address actor, uint keyRotationTime) internal onlyController(identity, actor) {
+        require( keyRotationTime >= minKeyRotationTime, 'Invalid minimum key rotation time' );
+        configs[identity].automaticRotation = true;
+        configs[identity].keyRotationTime = keyRotationTime;
+    }
+
+    function disableKeyRotation(address identity, address actor) internal onlyController(identity, actor) {
+        configs[identity].automaticRotation = false;
+    }
+
+    function addController(address identity, address controller) external override {
+        addController(identity, msg.sender, controller);
+    }
+
+    function removeController(address identity, address controller) external override {
+        removeController(identity, msg.sender, controller);
+    }
+
+    function changeController(address identity, address newController) external override {
+        changeController(identity, msg.sender, newController);
+    }
+
+    function changeControllerSigned(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, address newController) external override {
+        bytes32 hash = keccak256(abi.encodePacked(byte(0x19), byte(0), this, nonce[identityController(identity)], identity, "changeController", newController));
+        changeController(identity, checkSignature(identity, sigV, sigR, sigS, hash), newController);
+    }
+
+    function setAttribute(address identity, address actor, bytes memory name, bytes memory value, uint validity) internal onlyController(identity, actor) {
+        emit DIDAttributeChanged(identity, name, value, block.timestamp + validity, changed[identity]);
+        changed[identity] = block.number;
+    }
+
+    function setAttribute(address identity, bytes memory name, bytes memory value, uint validity) external override {
+        setAttribute(identity, msg.sender, name, value, validity);
+    }
+
+    function setAttributeSigned(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, bytes memory name, bytes memory value, uint validity) external override {
+        bytes32 hash = keccak256(abi.encodePacked(byte(0x19), byte(0), this, nonce[identityController(identity)], identity, "setAttribute", name, value, validity));
+        setAttribute(identity, checkSignature(identity, sigV, sigR, sigS, hash), name, value, validity);
+    }
+
+    function revokeAttribute(address identity, address actor, bytes memory name, bytes memory value) internal onlyController(identity, actor) {
+        emit DIDAttributeChanged(identity, name, value, 0, changed[identity]);
+        changed[identity] = block.number;
+    }
+
+    function revokeAttribute(address identity, bytes memory name, bytes memory value) external override {
+        revokeAttribute(identity, msg.sender, name, value);
+    }
+
+    function revokeAttributeSigned(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, bytes memory name, bytes memory value) external override {
+        bytes32 hash = keccak256(abi.encodePacked(byte(0x19), byte(0), this, nonce[identityController(identity)], identity, "revokeAttribute", name, value));
+        revokeAttribute(identity, checkSignature(identity, sigV, sigR, sigS, hash), name, value);
+    }
+
+    function enableKeyRotation(address identity, uint keyRotationTime) external override {
+        enableKeyRotation(identity, msg.sender, keyRotationTime);
+    }
+
+    function disableKeyRotation(address identity) external override {
+        disableKeyRotation(identity, msg.sender);
+    }
 
 }
