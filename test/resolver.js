@@ -1,7 +1,7 @@
 import chai from 'chai';
 
 import chaiAsPromised from "chai-as-promised";
-import { getResolver } from "../resolver.js";
+import { getResolver } from "../lib/resolver.js";
 
 const expect = chai.expect;
 chai.use( chaiAsPromised );

@@ -1,7 +1,7 @@
 {
 	"name": "@lacchain/did",
-	"version": "1.1.0",
-	"description": "The LACChain DID method",
+	"version": "1.2.0",
+	"description": "The LACChain DID Method NodeJS Implementation",
 	"author": "Sergio Ceron Figueroa <sergioce@iadb.org>",
 	"keywords": [
 		"did",
@@ -16,13 +16,11 @@
 	"homepage": "http://dev.lacchain.net/en/did-method",
 	"type": "module",
 	"scripts": {
-		"test": "./node_modules/mocha/bin/mocha --experimental-json-modules --timeout 20000 --ui bdd ./lib/test/**",
-		"coverage": "nyc mocha --experimental-json-modules --experimental-loader=@istanbuljs/esm-loader-hook --timeout 20000 --ui bdd ./lib/test/**",
-		"report-coverage": "nyc report --reporter=text-lcov > coverage.lcov",
-		"truffle:test": "truffle test"
+		"test": "./node_modules/mocha/bin/mocha --experimental-json-modules --timeout 20000 --ui bdd ./test/**",
+		"coverage": "nyc mocha --experimental-json-modules --experimental-loader=@istanbuljs/esm-loader-hook --timeout 20000 --ui bdd ./test/**",
+		"report-coverage": "nyc report --reporter=text-lcov > coverage.lcov"
 	},
 	"dependencies": {
-		"@openzeppelin/contracts": "^4.1.0",
 		"bs58": "^4.0.1",
 		"ethereumjs-tx": "^1.3.4",
 		"ethereumjs-util": "^5.1.5",
@@ -31,14 +29,11 @@
 		"pify": "^5.0.0"
 	},
 	"devDependencies": {
-		"ganache-cli": "^6.12.2",
 		"mocha": "^8.3.0",
 		"chai": "^4.2.0",
 		"nyc": "^15.1.0",
 		"chai-as-promised": "^7.1.1",
-		"@istanbuljs/esm-loader-hook": "^0.1.2",
-		"truffle": "^5.1.67",
-		"@truffle/hdwallet-provider": "^1.2.2"
+		"@istanbuljs/esm-loader-hook": "^0.1.2"
 	},
 	"license": "Apache-2.0",
 	"main": "index.js",
@@ -48,7 +43,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/lacchain/did-method.git"
+		"url": "git+https://github.com/lacchain/lacchain-did-js.git"
 	},
 	"bugs": {
 		"url": "https://github.com/lacchain/did-method/issues"

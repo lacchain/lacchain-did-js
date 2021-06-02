@@ -1,9 +1,9 @@
 import chai from 'chai';
 import bs58 from "bs58";
 import chaiAsPromised from "chai-as-promised";
-import DID from "../did.js";
-import DIDRecoverable from "../didrecoverable.js";
-import { createKeyPair } from "../utils.js";
+import DID from "../lib/did.js";
+import DIDRecoverable from "../lib/didrecoverable.js";
+import { createKeyPair, sleep } from "../lib/utils.js";
 
 const expect = chai.expect;
 chai.use( chaiAsPromised );
@@ -12,25 +12,28 @@ chai.should();
 describe( 'DID', () => {
 	const readOnly = new DID( {
 		address: '0x8adda74623d30d2dd9642119b0ea4f51b476e253',
-		registry: '0xDF1EbaE3e2318AA57CFaf11E1Dd3531D5A5AdA04',
+		registry: '0xbDa1238272FDA6888556449Cb77A87Fc8205E8ba',
 		rpcUrl: 'https://writer.lacchain.net',
 		network: 'main'
 	} );
 	const did = new DID( {
-		registry: '0xDF1EbaE3e2318AA57CFaf11E1Dd3531D5A5AdA04',
+		registry: '0xbDa1238272FDA6888556449Cb77A87Fc8205E8ba',
 		rpcUrl: 'https://writer.lacchain.net',
 		network: 'main'
 	} );
 	const didRecoverable = new DIDRecoverable( {
-		registry: '0xCC77A5e709cB473F49c943D9b40B989f986E5F2F',
+		registry: '0xC9Be468e482Fb0bD8f34e224c25C905b99820308',
 		rpcUrl: 'https://writer.lacchain.net',
 		network: 'main'
 	} );
+	const controller0 = {
+		address: did.address,
+		privateKey: did.config.controllerPrivateKey + ''
+	};
 	const controller1 = createKeyPair();
 	const controller2 = createKeyPair();
 	const controller3 = createKeyPair();
 	const controller4 = createKeyPair();
-	const controller5 = createKeyPair();
 
 	const veryKey = createKeyPair();
 	const authKey = createKeyPair();
@@ -94,6 +97,37 @@ describe( 'DID', () => {
 		} catch( e ) {
 			expect( e.message ).to.equals( "Cannot change controller to a read-only DID" );
 		}
+	} );
+
+	it( "should do automatic key rotation", async() => {
+		await did.addController( controller2.address );
+		await did.addController( controller3.address );
+		await did.addController( controller4.address );
+
+		await did.enableKeyRotation( 10 );
+
+		const firstController = await did.getController();
+		await sleep( 10 );
+		const lastController = await did.getController();
+
+		expect( firstController ).to.not.be.equal( lastController );
+	} );
+
+	it( "should not do automatic key rotation", async() => {
+		const lastController = await did.getController();
+		did.setControllerKey(
+			[controller0, controller1, controller2, controller3, controller4]
+				.find( c => c.address.toLowerCase() === lastController.toLowerCase() )
+				.privateKey
+		);
+		await did.disableKeyRotation();
+		did.setControllerKey( controller0.privateKey );
+		await did.changeController( controller4.address );
+		did.setControllerKey( controller4.privateKey );
+
+		const currentController = await did.getController();
+
+		expect( currentController.toLowerCase() ).to.equal( controller4.address.toLowerCase() );
 	} );
 
 	it( 'should add a Verification Method', async() => {
