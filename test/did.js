@@ -107,10 +107,15 @@ describe( 'DID', () => {
 		await did.enableKeyRotation( 10 );
 
 		const firstController = await did.getController();
-		await sleep( 10 );
-		const lastController = await did.getController();
+		for( const i of new Array( 10 ) ){
+			const currentController = await did.getController();
+			if( firstController !== currentController ){
+				return expect( true ).to.equals( true )
+			}
+			await sleep( 1 );
+		}
 
-		expect( firstController ).to.not.be.equal( lastController );
+		expect( true ).to.equals( false );
 	} );
 
 	it( "should not do automatic key rotation", async() => {

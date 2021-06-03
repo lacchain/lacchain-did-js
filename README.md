@@ -1,6 +1,6 @@
 # LACChain DID Method NodeJS Library
 
-[DID Specification](http://dev.lacchain.net/en/did-method) | [DID Registry](http://github.com/lacchain/lacchain-did-registry)
+[DID Specification](http://dev.lacchain.net/en/did-method) | [DID Registry Contracts](http://github.com/lacchain/lacchain-did-registry)
 
 This library is an implementation of LACChain DID Method in NodeJS. 
 It provides the necessary methods and functions to interact with a DID and resolve a DID Document without the need to directly call the smart contracts.
@@ -140,27 +140,27 @@ await did.addVerificationMethod({
 ```
 
 Where **type** can  (according to the [W3C DID Verification Relationships](https://www.w3.org/TR/did-core/#verification-relationships)):
-- vm: Generic Verification Method
-- auth: Authentication Method
-- asse: Assertion Method
-- keya: Key Agreement
-- dele: Delegation Capability
-- invo: Invocation Capability
+- **vm**: Generic Verification Method
+- **auth**: Authentication Method
+- **asse**: Assertion Method
+- **keya**: Key Agreement
+- **dele**: Delegation Capability
+- **invo**: Invocation Capability
 
 And **algorithm** can be (see [W3C DID Verification Method Types](https://www.w3.org/TR/did-spec-registries/#verification-method-types)):
-- jwk: JsonWebKey2020,
-- esecp256k1vk: EcdsaSecp256k1VerificationKey2019,
-- esecp256k1rm: EcdsaSecp256k1RecoveryMethod2020,
-- edd25519vk: Ed25519VerificationKey2018,
-- gpgvk: GpgVerificationKey2020,
-- rsavk: RsaVerificationKey2018,
-- x25519ka: X25519KeyAgreementKey2019,
-- ssecp256k1vk: SchnorrSecp256k1VerificationKey2019
+- **jwk**: JsonWebKey2020,
+- **esecp256k1vk**: EcdsaSecp256k1VerificationKey2019,
+- **esecp256k1rm**: EcdsaSecp256k1RecoveryMethod2020,
+- **edd25519vk**: Ed25519VerificationKey2018,
+- **gpgvk**: GpgVerificationKey2020,
+- **rsavk**: RsaVerificationKey2018,
+- **x25519ka**: X25519KeyAgreementKey2019,
+- **ssecp256k1vk**: SchnorrSecp256k1VerificationKey2019
 
 And **encoding** support the following formats (according to the [W3C DID Verification Method Properties](https://www.w3.org/TR/did-spec-registries/#verification-method-properties)):
-- hex: Hexadecimal
-- base64: Base 64
-- base58: Base 58
+- **hex**: Hexadecimal
+- **base64**: Base 64
+- **base58**: Base 58
 
 The **publicKey** represents the Public Key itself in the **encoding** format specified. 
 
@@ -306,14 +306,16 @@ Where:
 
 ***Note:** The **recover** function needs to be called ``n/2 + 1`` times.*
 
-## Testing the NodeJS library
+## Testing
 
-Make sure you have truffle installed, then run:
+The unit test will be performed in the LACChain Main Network. If you want to change that, edit directly the files in the /test directory 
 
 ```bash
 $ npm install
 $ npm test
 ```
+
+## Licence
 
 Copyright 2021 LACChain
 
