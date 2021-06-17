@@ -70,7 +70,7 @@ const did = new DIDRecoverable( {
 The basic properties of a DID are:
 
 ```javascript
-console.log( did.did ); // did:lac:main:0x47adc0faa4f6eb42b499187317949ed99e77ee85
+console.log( did.id ); // did:lac:main:0x47adc0faa4f6eb42b499187317949ed99e77ee85
 console.log( did.address ); // 0x47adc0faa4f6eb42b499187317949ed99e77ee85
 ```
 
@@ -301,8 +301,8 @@ await did.recover( CONTROLLER_ADDRESS, CONTROLLER_PRIVATE_KEY );
 
 Where:
 
-- CONTROLLER_ADDRESS: Needs to be previously registered in the DID
-- CONTROLLER_PRIVATE_KEY: Is the controller private key in hex format without 0x prefix
+- CONTROLLER_ADDRESS: The controller address that you will prove ownership (Needs to be previously registered in the DID)
+- CONTROLLER_PRIVATE_KEY: Is the controller private key that you will prove ownership (in hex format without 0x prefix)
 
 ***Note:** The **recover** function needs to be called ``n/2 + 1`` times.*
 
