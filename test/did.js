@@ -12,18 +12,24 @@ chai.should();
 describe( 'DID', () => {
 	const readOnly = new DID( {
 		address: '0x8adda74623d30d2dd9642119b0ea4f51b476e253',
-		registry: '0xbDa1238272FDA6888556449Cb77A87Fc8205E8ba',
-		rpcUrl: 'https://writer.lacchain.net',
+		registry: '0xB9D96a0bDd52FE48fC504d0BB28AF51091275C81',
+		nodeAddress: '0xd00e6624a73f88b39f82ab34e8bf2b4d226fd768',
+		expiration: 1736394529,
+		rpcUrl: 'http://34.69.22.82',
 		network: 'main'
 	} );
 	const did = new DID( {
-		registry: '0xbDa1238272FDA6888556449Cb77A87Fc8205E8ba',
-		rpcUrl: 'https://writer.lacchain.net',
+		registry: '0xB9D96a0bDd52FE48fC504d0BB28AF51091275C81',
+		nodeAddress: '0xd00e6624a73f88b39f82ab34e8bf2b4d226fd768',
+		expiration: 1736394529,
+		rpcUrl: 'http://34.69.22.82',
 		network: 'main'
 	} );
 	const didRecoverable = new DIDRecoverable( {
-		registry: '0xC9Be468e482Fb0bD8f34e224c25C905b99820308',
-		rpcUrl: 'https://writer.lacchain.net',
+		registry: '0xB9D96a0bDd52FE48fC504d0BB28AF51091275C81',
+		nodeAddress: '0xd00e6624a73f88b39f82ab34e8bf2b4d226fd768',
+		expiration: 1736394529,
+		rpcUrl: 'http://34.69.22.82',
 		network: 'main'
 	} );
 	const controller0 = {
@@ -46,8 +52,10 @@ describe( 'DID', () => {
 		try {
 			new DID( {
 				controllerPrivateKey: '8adda74623d30d2dd9642119b0ea4f51b476e2533bE8DD330d2dd9642119bda74623d',
-				registry: '0x4C7bCd86F81e52368C975949D8B070F47C4c3767',
-				rpcUrl: 'http://localhost:8545',
+				registry: '0xB9D96a0bDd52FE48fC504d0BB28AF51091275C81',
+				nodeAddress: '0xd00e6624a73f88b39f82ab34e8bf2b4d226fd768',
+				expiration: 1736394529,
+				rpcUrl: 'http://34.69.22.82',
 				network: 'main'
 			} );
 		} catch( e ) {

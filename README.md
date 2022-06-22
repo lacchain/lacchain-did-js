@@ -67,6 +67,34 @@ const did = new DIDRecoverable( {
 } );
 ```
 
+#### LAC-NET Gas Model
+
+If you are planning to interact with the LACChain / LACNET Gas Model, just specify the **nodeAddress** & **expiration** parameters in the config object:
+
+```javascript
+const did = new DID( {
+   registry: '0xB9D96a0bDd52FE48fC504d0BB28AF51091275C81',
+   rpcUrl: 'http://34.69.22.82',
+   nodeAddress: '0xd00e6624a73f88b39f82ab34e8bf2b4d226fd768',
+   expiration: 1736394529,
+   network: 'main'
+} );
+```
+
+Or,
+
+```javascript
+const did = new DIDRecoverable( {
+   registry: '0xB9D96a0bDd52FE48fC504d0BB28AF51091275C81',
+   rpcUrl: 'http://34.69.22.82',
+   nodeAddress: '0xd00e6624a73f88b39f82ab34e8bf2b4d226fd768',
+   expiration: 1736394529,
+   network: 'main'
+} );
+```
+
+**Note:** Use the same parameters in the ```resolver``` class
+
 The basic properties of a DID are:
 
 ```javascript
