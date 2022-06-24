@@ -1,6 +1,6 @@
 # LACChain DID Method NodeJS Library
 
-[DID Specification](http://dev.lacchain.net/en/did-method) | [DID Registry Contracts](http://github.com/lacchain/lacchain-did-registry)
+[DID Specification](https://dev.lacchain.net/en/ssi/lac-did) | [DID Registry Contracts](http://github.com/lacchain/lacchain-did-registry)
 
 This library is an implementation of LACChain DID Method in NodeJS. 
 It provides the necessary methods and functions to interact with a DID and resolve a DID Document without the need to directly call the smart contracts.
