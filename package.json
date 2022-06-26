@@ -1,6 +1,6 @@
 {
 	"name": "@lacchain/did",
-	"version": "1.3.1",
+	"version": "1.4.0",
 	"description": "The LACChain DID Method NodeJS Implementation",
 	"author": "Sergio Ceron Figueroa <sergioce@iadb.org>",
 	"keywords": [
