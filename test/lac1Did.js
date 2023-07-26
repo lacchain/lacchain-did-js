@@ -1,7 +1,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import DID from "../lib/did.js";
 import { createKeyPair, sleep } from "../lib/utils.js";
+import DIDLac1 from "../lib/lac1/lac1Did.js";
 import {
   failToCreateWithoutAddress,
   shouldAddAssertionMethod,
@@ -25,48 +25,20 @@ import {
   shouldGetDidDocumentReferenceMode,
   shouldRemoveLastDidController,
 } from "./lacBaseTestMethods.js";
-import { getLacDidTestParams } from "./testInitializer.js";
+import {
+  getLac1didTestParams,
+  newLac1Did as newDid,
+} from "./testInitializer.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 chai.should();
 
 const { registry, nodeAddress, rpcUrl, network, expiration } =
-  await getLacDidTestParams();
+  await getLac1didTestParams();
 
-describe("DID", () => {
-  const newDid = async () => {
-    return new DID({
-      registry,
-      nodeAddress,
-      expiration,
-      rpcUrl,
-      network,
-    });
-  };
-  const readOnly = new DID({
-    address: "0x8adda74623d30d2dd9642119b0ea4f51b476e253",
-    registry,
-    nodeAddress,
-    expiration,
-    rpcUrl,
-    network,
-  });
-  const did = new DID({
-    registry,
-    nodeAddress,
-    expiration,
-    rpcUrl,
-    network,
-  });
-  const controller0 = {
-    address: did.address,
-    privateKey: did.config.controllerPrivateKey + "",
-  };
-  const controller1 = createKeyPair();
-  const controller2 = createKeyPair();
-  const controller3 = createKeyPair();
-  const controller4 = createKeyPair();
+describe("DIDLac1", async () => {
+  const veryKey = createKeyPair();
 
   it("should fail to create a DID without address", async () => {
     await failToCreateWithoutAddress();
@@ -98,46 +70,17 @@ describe("DID", () => {
   });
 
   it("should fail to change a read-only DID controller", async () => {
+    const readOnly = await DIDLac1.new({
+      address: createKeyPair().address,
+      registry,
+      nodeAddress,
+      expiration,
+      rpcUrl,
+      network,
+      chainId,
+    });
     await shouldFailToChangeReadonlyDid(readOnly);
   });
-
-  // it("should do automatic key rotation", async () => {
-  //   await did.addController(controller2.address);
-  //   await did.addController(controller3.address);
-  //   await did.addController(controller4.address);
-
-  //   await did.enableKeyRotation(10);
-
-  //   const firstController = await did.getController();
-  //   for (const i of new Array(10)) {
-  //     const currentController = await did.getController();
-  //     if (firstController !== currentController) {
-  //       return expect(true).to.equals(true);
-  //     }
-  //     await sleep(1);
-  //   }
-
-  //   expect(true).to.equals(false);
-  // });
-
-  // it("should not do automatic key rotation", async () => {
-  //   const lastController = await did.getController();
-  //   did.setControllerKey(
-  //     [controller0, controller1, controller2, controller3, controller4].find(
-  //       (c) => c.address.toLowerCase() === lastController.toLowerCase()
-  //     ).privateKey
-  //   );
-  //   await did.disableKeyRotation();
-  //   did.setControllerKey(controller0.privateKey);
-  //   await did.changeController(controller4.address);
-  //   did.setControllerKey(controller4.privateKey);
-
-  //   const currentController = await did.getController();
-
-  //   expect(currentController.toLowerCase()).to.equal(
-  //     controller4.address.toLowerCase()
-  //   );
-  // });
 
   it("should add a Verification Method", async () => {
     const did = await newDid();
@@ -196,16 +139,26 @@ describe("DID", () => {
 
   it("should revoke a Verification Method", async () => {
     const did = await newDid();
-    const veryKey = createKeyPair();
-    await did.revokeVerificationMethod({
+
+    await did.addVerificationMethod({
       type: "vm",
       algorithm: "esecp256k1rm",
       encoding: "hex",
       publicKey: `0x${veryKey.publicKey}`,
       controller: did.address,
     });
-    const document = await did.getDocument();
 
+    await did.revokeVerificationMethod({
+      type: "vm",
+      algorithm: "esecp256k1rm",
+      encoding: "hex",
+      publicKey: `0x${veryKey.publicKey}`,
+      controller: did.address,
+      revokeDeltaTimeSeconds: 86400, // e.g. 86400: 1 day before
+      compromised: false, // the key is being rotated (not compomised)
+    });
+
+    const document = await did.getDocument();
     expect(document.verificationMethod).to.have.lengthOf(0);
   });
 
