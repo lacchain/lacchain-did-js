@@ -416,6 +416,20 @@ const shouldGetDidDocumentInSpecifiedMode = async (did, mode) => {
   expect(document.toJSON()).to.not.be.null;
 };
 
+const shouldAddAKAId = async (did, id, validity) => {
+  await did.addAKAId(id, validity);
+  const document = await did.getDocument();
+  console.log(JSON.stringify(document))
+  expect(document.toJSON().alsoKnownAs).to.not.be.undefined;
+};
+
+const shouldRemoveAKAId = async (did, id) => {
+  await did.removeAKAId(id);
+  const document = await did.getDocument();
+  console.log(JSON.stringify(document))
+  expect(document.toJSON().alsoKnownAs).to.be.undefined;
+};
+
 export {
   failToCreateWithoutAddress,
   shouldAddDidController,
@@ -438,4 +452,6 @@ export {
   shouldAddService,
   shouldGetDidDocumentExplicitMode,
   shouldGetDidDocumentReferenceMode,
+  shouldAddAKAId,
+  shouldRemoveAKAId,
 };

@@ -24,6 +24,8 @@ import {
   shouldGetDidDocumentExplicitMode,
   shouldGetDidDocumentReferenceMode,
   shouldRemoveLastDidController,
+  shouldAddAKAId,
+  shouldRemoveAKAId,
 } from "./lacBaseTestMethods.js";
 import {
   getLac1didTestParams,
@@ -176,4 +178,21 @@ describe("DIDLac1", async () => {
     const did = await newDid();
     await shouldGetDidDocumentReferenceMode(did);
   });
+
+  it("Should add an AKA Identifier to a DID", async () => {
+    const did = await newDid();
+    console.log(did.id);
+    const someId = "id:123";
+    const validity = 86400*365;
+    await shouldAddAKAId(did,someId, validity);
+  })
+
+  it("Should remove an AKA Identifier to a DID", async () => {
+    const did = await newDid();
+    console.log(did.id);
+    const someId = "id:123";
+    const validity = 86400*365;
+    await shouldAddAKAId(did,someId, validity);
+    await shouldRemoveAKAId(did,someId);
+  })
 });
