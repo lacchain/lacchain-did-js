@@ -183,16 +183,16 @@ describe("DIDLac1", async () => {
     const did = await newDid();
     console.log(did.id);
     const someId = "id:123";
-    const validity = 86400*365;
-    await shouldAddAKAId(did,someId, validity);
-  })
+    const validity = 86400 * 365;
+    await shouldAddAKAId(did, someId, validity);
+  });
 
   it("Should remove an AKA Identifier to a DID", async () => {
     const did = await newDid();
     console.log(did.id);
     const someId = "id:123";
-    const validity = 86400*365;
-    await shouldAddAKAId(did,someId, validity);
-    await shouldRemoveAKAId(did,someId);
-  })
+    const validity = 86400 * 365;
+    await shouldAddAKAId(did, someId, validity);
+    await shouldRemoveAKAId(did, someId);
+  });
 });

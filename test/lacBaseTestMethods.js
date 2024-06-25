@@ -3,6 +3,7 @@ import bs58 from "bs58";
 import chaiAsPromised from "chai-as-promised";
 import { createKeyPair, sleep } from "../lib/utils.js";
 import DIDLac1 from "../lib/lac1/lac1Did.js";
+import { processVerificationMethodIdForAttribute } from "../lib/lac1/lac1resolverUtils.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -349,20 +350,25 @@ const shouldBindCapabilityDelegation = async (did) => {
     algorithm: "esecp256k1rm",
     encoding: "hex",
     publicKey: `0x${veryKey.publicKey}`,
-    controller: did.address,
+    controller: did.id,
   });
+
+  const deleId = processVerificationMethodIdForAttribute(
+    did.id,
+    veryKey.publicKey
+  );
 
   await did.addCapabilityDelegation({
     algorithm: "esecp256k1vk",
     encoding: "pem",
     publicKey: deleKey.publicKey,
-    controller: did.address,
+    controller: did.id,
   });
 
-  await did.bindCapabilityDelegation(`${did.id}#vm-0`);
+  await did.bindCapabilityDelegation(`${did.id}#${deleId}`); // TODO: fix
   const document = await did.getDocument();
 
-  expect(document.verificationMethod).to.have.lengthOf(2);
+  expect(document.verificationMethod).to.have.lengthOf(3);
 
   expect(document.capabilityDelegation).to.not.be.null;
   expect(document.capabilityDelegation).to.have.lengthOf(2);
@@ -419,14 +425,12 @@ const shouldGetDidDocumentInSpecifiedMode = async (did, mode) => {
 const shouldAddAKAId = async (did, id, validity) => {
   await did.addAKAId(id, validity);
   const document = await did.getDocument();
-  console.log(JSON.stringify(document))
   expect(document.toJSON().alsoKnownAs).to.not.be.undefined;
 };
 
 const shouldRemoveAKAId = async (did, id) => {
   await did.removeAKAId(id);
   const document = await did.getDocument();
-  console.log(JSON.stringify(document))
   expect(document.toJSON().alsoKnownAs).to.be.undefined;
 };
 
