@@ -1,7 +1,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { createKeyPair, sleep } from "../lib/utils.js";
-import DIDLac1 from "../lib/lac1/lac1Did.js";
+import { createKeyPair, sleep } from "../../lib/utils.js";
+import DIDLac1 from "../../lib/lac1/lac1Did.js";
 import {
   failToCreateWithoutAddress,
   shouldAddDidController,
@@ -13,7 +13,7 @@ import {
   shouldGetDidDocumentExplicitMode,
   shouldGetDidDocumentReferenceMode,
   shouldRemoveLastDidController,
-} from "./lacBaseTestMethods.js";
+} from "../lac/lacBaseTestMethods.js";
 
 import {
   shouldAddVerificationMethod,
@@ -33,7 +33,7 @@ import {
 import {
   getLac1didTestParams,
   newLac1Did as newDid,
-} from "./testInitializer.js";
+} from "../testInitializer.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -42,7 +42,7 @@ chai.should();
 const { registry, nodeAddress, rpcUrl, network, expiration, chainId } =
   await getLac1didTestParams();
 
-describe("DIDLac1", async () => {
+describe("LAC1 DID", async () => {
   const veryKey = createKeyPair();
 
   it("should fail to create a DID without address", async () => {

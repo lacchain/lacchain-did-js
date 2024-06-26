@@ -1,7 +1,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import DID from "../lib/did.js";
-import { createKeyPair, sleep } from "../lib/utils.js";
+import DID from "../../lib/did.js";
+import { createKeyPair, sleep } from "../../lib/utils.js";
 import {
   failToCreateWithoutAddress,
   shouldAddAssertionMethod,
@@ -25,7 +25,7 @@ import {
   shouldGetDidDocumentReferenceMode,
   shouldRemoveLastDidController,
 } from "./lacBaseTestMethods.js";
-import { getLacDidTestParams } from "./testInitializer.js";
+import { getLacDidTestParams } from "../testInitializer.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -34,7 +34,7 @@ chai.should();
 const { registry, nodeAddress, rpcUrl, network, expiration } =
   await getLacDidTestParams();
 
-describe("DID", () => {
+describe("LAC DID", () => {
   const newDid = async () => {
     return new DID({
       registry,
