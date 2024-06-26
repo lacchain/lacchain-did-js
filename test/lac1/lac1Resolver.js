@@ -6,6 +6,7 @@ import {
   getLac1didTestParams,
   newLac1Did as newDid,
 } from "../testInitializer.js";
+import { processVerificationMethodIdForAttribute } from "../../lib/lac1/lac1resolverUtils.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -45,9 +46,13 @@ describe("Lac1 DIDResolver", async () => {
     const document = await resolver.lac1(did.id);
     const d = document.verificationMethod[0];
     expect(d["controller"]).to.eq(did.id);
-    expect(d["id"]).to.eq(`${did.id}#controller`);
-    expect(d["type"]).to.eq("EcdsaSecp256k1RecoveryMethod2020");
     const currentController = await did.getController();
+    const defaultIdVerificationMethod = processVerificationMethodIdForAttribute(
+      did.id,
+      currentController
+    );
+    expect(d["id"]).to.eq(`${did.id}#${defaultIdVerificationMethod}`);
+    expect(d["type"]).to.eq("EcdsaSecp256k1RecoveryMethod2020");
     const retrievedHexchainId =
       did.chainId.length % 2 == 0 ? did.chainId : "0" + did.chainId;
     const retrievedIntchainId = parseInt(retrievedHexchainId, 16);
