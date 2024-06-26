@@ -4,19 +4,8 @@ import { createKeyPair, sleep } from "../lib/utils.js";
 import DIDLac1 from "../lib/lac1/lac1Did.js";
 import {
   failToCreateWithoutAddress,
-  shouldAddAssertionMethod,
-  shouldAddAuthenticationMethod,
-  shouldAddCapabilityDelegation,
-  shouldAddCapabilityInvocation,
   shouldAddDidController,
-  shouldAddKeyAgreement,
   shouldAddService,
-  shouldAddVerificationMethod,
-  shouldBindAssertionMethod,
-  shouldBindAuthenticationMethod,
-  shouldBindCapabilityDelegation,
-  shouldBindCapabilityInvocation,
-  shouldBindKeyAgreement,
   shouldChangeDidController,
   shouldChangeDidControllerWithSignedTx,
   shouldFailToChangeDidController,
@@ -24,9 +13,23 @@ import {
   shouldGetDidDocumentExplicitMode,
   shouldGetDidDocumentReferenceMode,
   shouldRemoveLastDidController,
+} from "./lacBaseTestMethods.js";
+
+import {
+  shouldAddVerificationMethod,
+  shouldAddAuthenticationMethod,
+  shouldBindAuthenticationMethod,
+  shouldAddAssertionMethod,
+  shouldBindAssertionMethod,
+  shouldAddKeyAgreement,
+  shouldBindKeyAgreement,
+  shouldAddCapabilityInvocation,
+  shouldBindCapabilityInvocation,
+  shouldAddCapabilityDelegation,
+  shouldBindCapabilityDelegation,
   shouldAddAKAId,
   shouldRemoveAKAId,
-} from "./lacBaseTestMethods.js";
+} from "./lac1BaseTestMethods.js";
 import {
   getLac1didTestParams,
   newLac1Did as newDid,
@@ -36,7 +39,7 @@ const expect = chai.expect;
 chai.use(chaiAsPromised);
 chai.should();
 
-const { registry, nodeAddress, rpcUrl, network, expiration } =
+const { registry, nodeAddress, rpcUrl, network, expiration, chainId } =
   await getLac1didTestParams();
 
 describe("DIDLac1", async () => {
@@ -147,7 +150,7 @@ describe("DIDLac1", async () => {
       algorithm: "esecp256k1rm",
       encoding: "hex",
       publicKey: `0x${veryKey.publicKey}`,
-      controller: did.address,
+      controller: did.id,
     });
 
     await did.revokeVerificationMethod({
@@ -155,13 +158,13 @@ describe("DIDLac1", async () => {
       algorithm: "esecp256k1rm",
       encoding: "hex",
       publicKey: `0x${veryKey.publicKey}`,
-      controller: did.address,
+      controller: did.id,
       revokeDeltaTimeSeconds: 86400, // e.g. 86400: 1 day before
       compromised: false, // the key is being rotated (not compomised)
     });
 
     const document = await did.getDocument();
-    expect(document.verificationMethod).to.have.lengthOf(0);
+    expect(document.verificationMethod).to.have.lengthOf(1);
   });
 
   it("should add a Service", async () => {
@@ -181,7 +184,6 @@ describe("DIDLac1", async () => {
 
   it("Should add an AKA Identifier to a DID", async () => {
     const did = await newDid();
-    console.log(did.id);
     const someId = "id:123";
     const validity = 86400 * 365;
     await shouldAddAKAId(did, someId, validity);
@@ -189,7 +191,6 @@ describe("DIDLac1", async () => {
 
   it("Should remove an AKA Identifier to a DID", async () => {
     const did = await newDid();
-    console.log(did.id);
     const someId = "id:123";
     const validity = 86400 * 365;
     await shouldAddAKAId(did, someId, validity);
