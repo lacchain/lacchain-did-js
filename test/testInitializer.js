@@ -1,6 +1,6 @@
 import DIDLac1 from "../lib/lac1/lac1Did.js";
 
-const lac1Registry = "0xb4FB2e9BB0001cc8eAAE528571915F35Cb74C864";
+const lac1Registry = "0xd2d7bF1A9a774f09cbA9541c5326B22f83f734Df";
 const nodeAddress = "0xad730de8c4bfc3d845f7ce851bcf2ea17c049585";
 const rpcUrl = "http://35.185.112.219";
 const network = "openprotest";

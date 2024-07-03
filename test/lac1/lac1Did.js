@@ -1,22 +1,11 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { createKeyPair, sleep } from "../lib/utils.js";
-import DIDLac1 from "../lib/lac1/lac1Did.js";
+import { createKeyPair, sleep } from "../../lib/utils.js";
+import DIDLac1 from "../../lib/lac1/lac1Did.js";
 import {
   failToCreateWithoutAddress,
-  shouldAddAssertionMethod,
-  shouldAddAuthenticationMethod,
-  shouldAddCapabilityDelegation,
-  shouldAddCapabilityInvocation,
   shouldAddDidController,
-  shouldAddKeyAgreement,
   shouldAddService,
-  shouldAddVerificationMethod,
-  shouldBindAssertionMethod,
-  shouldBindAuthenticationMethod,
-  shouldBindCapabilityDelegation,
-  shouldBindCapabilityInvocation,
-  shouldBindKeyAgreement,
   shouldChangeDidController,
   shouldChangeDidControllerWithSignedTx,
   shouldFailToChangeDidController,
@@ -24,20 +13,36 @@ import {
   shouldGetDidDocumentExplicitMode,
   shouldGetDidDocumentReferenceMode,
   shouldRemoveLastDidController,
-} from "./lacBaseTestMethods.js";
+} from "../lac/lacBaseTestMethods.js";
+
+import {
+  shouldAddVerificationMethod,
+  shouldAddAuthenticationMethod,
+  shouldBindAuthenticationMethod,
+  shouldAddAssertionMethod,
+  shouldBindAssertionMethod,
+  shouldAddKeyAgreement,
+  shouldBindKeyAgreement,
+  shouldAddCapabilityInvocation,
+  shouldBindCapabilityInvocation,
+  shouldAddCapabilityDelegation,
+  shouldBindCapabilityDelegation,
+  shouldAddAKAId,
+  shouldRemoveAKAId,
+} from "./lac1BaseTestMethods.js";
 import {
   getLac1didTestParams,
   newLac1Did as newDid,
-} from "./testInitializer.js";
+} from "../testInitializer.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 chai.should();
 
-const { registry, nodeAddress, rpcUrl, network, expiration } =
+const { registry, nodeAddress, rpcUrl, network, expiration, chainId } =
   await getLac1didTestParams();
 
-describe("DIDLac1", async () => {
+describe("LAC1 DID", async () => {
   const veryKey = createKeyPair();
 
   it("should fail to create a DID without address", async () => {
@@ -145,7 +150,7 @@ describe("DIDLac1", async () => {
       algorithm: "esecp256k1rm",
       encoding: "hex",
       publicKey: `0x${veryKey.publicKey}`,
-      controller: did.address,
+      controller: did.id,
     });
 
     await did.revokeVerificationMethod({
@@ -153,13 +158,13 @@ describe("DIDLac1", async () => {
       algorithm: "esecp256k1rm",
       encoding: "hex",
       publicKey: `0x${veryKey.publicKey}`,
-      controller: did.address,
+      controller: did.id,
       revokeDeltaTimeSeconds: 86400, // e.g. 86400: 1 day before
       compromised: false, // the key is being rotated (not compomised)
     });
 
     const document = await did.getDocument();
-    expect(document.verificationMethod).to.have.lengthOf(0);
+    expect(document.verificationMethod).to.have.lengthOf(1);
   });
 
   it("should add a Service", async () => {
@@ -175,5 +180,20 @@ describe("DIDLac1", async () => {
   it("should get the DID Document in reference mode", async () => {
     const did = await newDid();
     await shouldGetDidDocumentReferenceMode(did);
+  });
+
+  it("Should add an AKA Identifier to a DID", async () => {
+    const did = await newDid();
+    const someId = "id:123";
+    const validity = 86400 * 365;
+    await shouldAddAKAId(did, someId, validity);
+  });
+
+  it("Should remove an AKA Identifier to a DID", async () => {
+    const did = await newDid();
+    const someId = "id:123";
+    const validity = 86400 * 365;
+    await shouldAddAKAId(did, someId, validity);
+    await shouldRemoveAKAId(did, someId);
   });
 });
