@@ -7,7 +7,7 @@ It provides the necessary methods and functions to interact with a DID and resol
 
 ## Pre-requisites
 
-- NodeJS  > 14.4
+- NodeJS  > 16.20 or above
 
 ## Usage
 
