@@ -5,7 +5,7 @@ const nodeAddress = "0xad730de8c4bfc3d845f7ce851bcf2ea17c049585";
 const rpcUrl = "http://35.185.112.219";
 const network = "openprotest";
 const chainId = 648540;
-const expiration = 1736394529;
+const expiration = 2036394529;
 
 // todo: run local network
 export const getLac1didTestParams = async () => {

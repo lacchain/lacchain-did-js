@@ -6,7 +6,7 @@ import {
   getLac1didTestParams,
   newLac1Did as newDid,
 } from "../testInitializer.js";
-import { processVerificationMethodIdForAttribute } from "../../lib/lac1/lac1resolverUtils.js";
+import { processIdentifierForVmOrService } from "../../lib/lac1/lac1resolverUtils.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -47,7 +47,7 @@ describe("Lac1 DIDResolver", async () => {
     const d = document.verificationMethod[0];
     expect(d["controller"]).to.eq(did.id);
     const currentController = await did.getController();
-    const defaultIdVerificationMethod = processVerificationMethodIdForAttribute(
+    const defaultIdVerificationMethod = processIdentifierForVmOrService(
       did.id,
       currentController
     );
