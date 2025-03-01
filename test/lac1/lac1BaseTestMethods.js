@@ -1,8 +1,15 @@
 import chai from "chai";
 import bs58 from "bs58";
 import chaiAsPromised from "chai-as-promised";
-import { createKeyPair, sleep } from "../../lib/utils.js";
-import { processVerificationMethodIdForAttribute } from "../../lib/lac1/lac1resolverUtils.js";
+import { createKeyPair } from "../../lib/utils.js";
+import {
+  computeCAPIP10,
+  processIdentifierForVmOrService,
+} from "../../lib/lac1/lac1resolverUtils.js";
+import {
+  LAC1_SIG_AUTH_DELEGATE_TYPE_NAME,
+  LAC1_VERI_KEY_DELEGATE_TYPE_NAME,
+} from "../../lib/lac1/constants.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -63,10 +70,7 @@ const shouldBindAuthenticationMethod = async (did) => {
   });
   let document = await did.getDocument();
 
-  const vmId = processVerificationMethodIdForAttribute(
-    did.id,
-    veryKey.publicKey
-  );
+  const vmId = processIdentifierForVmOrService(did.id, veryKey.publicKey);
   await did.bindAuthenticationMethod(`${did.id}#${vmId}`);
   document = await did.getDocument();
   expect(document.verificationMethod).to.have.lengthOf(3);
@@ -122,10 +126,7 @@ const shouldBindAssertionMethod = async (did) => {
     controller: did.id,
   });
 
-  const vmId = processVerificationMethodIdForAttribute(
-    did.id,
-    veryKey.publicKey
-  );
+  const vmId = processIdentifierForVmOrService(did.id, veryKey.publicKey);
 
   await did.bindAssertionMethod(`${did.id}#${vmId}`);
   const document = await did.getDocument();
@@ -178,10 +179,7 @@ const shouldBindKeyAgreement = async (did) => {
     controller: did.id,
   });
 
-  const vmId = processVerificationMethodIdForAttribute(
-    did.id,
-    veryKey.publicKey
-  );
+  const vmId = processIdentifierForVmOrService(did.id, veryKey.publicKey);
 
   await did.bindKeyAgreement(`${did.id}#${vmId}`);
   const document = await did.getDocument();
@@ -242,10 +240,7 @@ const shouldBindCapabilityInvocation = async (did) => {
     controller: did.id,
   });
 
-  const vmId = processVerificationMethodIdForAttribute(
-    did.id,
-    veryKey.publicKey
-  );
+  const vmId = processIdentifierForVmOrService(did.id, veryKey.publicKey);
 
   await did.bindCapabilityInvocation(`${did.id}#${vmId}`);
   const document = await did.getDocument();
@@ -292,10 +287,7 @@ const shouldBindCapabilityDelegation = async (did) => {
     controller: did.id,
   });
 
-  const deleId = processVerificationMethodIdForAttribute(
-    did.id,
-    veryKey.publicKey
-  );
+  const deleId = processIdentifierForVmOrService(did.id, veryKey.publicKey);
 
   await did.addCapabilityDelegation({
     algorithm: "esecp256k1vk",
@@ -328,6 +320,114 @@ const shouldRemoveAKAId = async (did, id) => {
   expect(document.toJSON().alsoKnownAs).to.be.undefined;
 };
 
+const shouldAddSigAuthDelegate = async (did, validity) => {
+  const delegateType = LAC1_SIG_AUTH_DELEGATE_TYPE_NAME;
+  const delegateKey = createKeyPair();
+  await did.addDelegate(delegateType, delegateKey.address, validity);
+  const document = await did.getDocument();
+  const blockchainAccountId = computeCAPIP10(
+    did.config.chainId,
+    delegateKey.address
+  );
+  expect(document.verificationMethod).to.have.lengthOf(2);
+  expect(
+    document.verificationMethod[1].blockchainAccountId.toLocaleLowerCase()
+  ).to.equal(blockchainAccountId.toLocaleLowerCase());
+
+  expect(document.authentication).to.not.be.null;
+  expect(document.authentication).to.have.lengthOf(2);
+};
+
+const shouldAddVeriKeyDelegate = async (did, validity) => {
+  const delegateType = LAC1_VERI_KEY_DELEGATE_TYPE_NAME;
+  const delegateKey = createKeyPair();
+  await did.addDelegate(delegateType, delegateKey.address, validity);
+  const document = await did.getDocument();
+  const blockchainAccountId = computeCAPIP10(
+    did.config.chainId,
+    delegateKey.address
+  );
+  expect(document.verificationMethod).to.have.lengthOf(2);
+  expect(
+    document.verificationMethod[1].blockchainAccountId.toLocaleLowerCase()
+  ).to.equal(blockchainAccountId.toLocaleLowerCase());
+
+  expect(document.assertionMethod).to.not.be.null;
+  expect(document.assertionMethod).to.have.lengthOf(2);
+};
+
+const shouldRevokeSigAuthDelegate = async (did) => {
+  const delegateType = LAC1_SIG_AUTH_DELEGATE_TYPE_NAME;
+  const document = await shouldRevokeDelegate(did, delegateType);
+  expect(document.authentication).to.have.lengthOf(1);
+};
+
+const shouldRevokeVeriKeyDelegate = async (did) => {
+  const delegateType = LAC1_VERI_KEY_DELEGATE_TYPE_NAME;
+  const document = await shouldRevokeDelegate(did, delegateType);
+  expect(document.assertionMethod).to.have.lengthOf(1);
+};
+
+const shouldRevokeDelegate = async (did, delegateType) => {
+  const delegateKey = createKeyPair();
+  const revokeDeltaTimeSeconds = 0;
+  const compromised = false;
+
+  //
+  const validity = 3600;
+  await did.addDelegate(delegateType, delegateKey.address, validity);
+  const blockchainAccountId = computeCAPIP10(
+    did.config.chainId,
+    delegateKey.address
+  );
+  let document = await did.getDocument();
+  expect(
+    document.verificationMethod[1].blockchainAccountId.toLocaleLowerCase()
+  ).to.equal(blockchainAccountId.toLocaleLowerCase());
+  //
+  await did.revokeDelegate(
+    delegateType,
+    delegateKey.address,
+    revokeDeltaTimeSeconds,
+    compromised
+  );
+  document = await did.getDocument();
+  return document;
+};
+
+const shouldAddSigAuthDelegateAndAttributeDelegate = async (did, validity) => {
+  const delegateType = LAC1_SIG_AUTH_DELEGATE_TYPE_NAME;
+  const delegateKey = createKeyPair();
+  await did.addDelegate(delegateType, delegateKey.address, validity);
+  let document = await did.getDocument();
+  const blockchainAccountId = computeCAPIP10(
+    did.config.chainId,
+    delegateKey.address
+  );
+  expect(document.verificationMethod).to.have.lengthOf(2);
+  expect(
+    document.verificationMethod[1].blockchainAccountId.toLocaleLowerCase()
+  ).to.equal(blockchainAccountId.toLocaleLowerCase());
+
+  expect(document.authentication).to.not.be.null;
+  expect(document.authentication).to.have.lengthOf(2);
+
+  //************ */ add attribute ****************** //
+  const authKey = delegateKey;
+  await did.addAuthenticationMethod({
+    // for lac1 this will never be rendered in the DID document
+    algorithm: "esecp256k1rm",
+    encoding: "blockchain",
+    publicKey: `${authKey.address}`,
+    controller: did.id,
+  });
+  document = await did.getDocument();
+
+  expect(document.verificationMethod).to.have.lengthOf(2);
+  expect(document.authentication).to.not.be.null;
+  expect(document.authentication).to.have.lengthOf(2);
+};
+
 export {
   shouldAddVerificationMethod,
   shouldAddAuthenticationMethod,
@@ -342,4 +442,9 @@ export {
   shouldBindCapabilityDelegation,
   shouldAddAKAId,
   shouldRemoveAKAId,
+  shouldAddSigAuthDelegate,
+  shouldRevokeSigAuthDelegate,
+  shouldRevokeVeriKeyDelegate,
+  shouldAddVeriKeyDelegate,
+  shouldAddSigAuthDelegateAndAttributeDelegate,
 };

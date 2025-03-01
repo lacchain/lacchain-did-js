@@ -29,6 +29,11 @@ import {
   shouldBindCapabilityDelegation,
   shouldAddAKAId,
   shouldRemoveAKAId,
+  shouldAddSigAuthDelegate,
+  shouldRevokeSigAuthDelegate,
+  shouldRevokeVeriKeyDelegate,
+  shouldAddVeriKeyDelegate,
+  shouldAddSigAuthDelegateAndAttributeDelegate,
 } from "./lac1BaseTestMethods.js";
 import {
   getLac1didTestParams,
@@ -195,5 +200,32 @@ describe("LAC1 DID", async () => {
     const validity = 86400 * 365;
     await shouldAddAKAId(did, someId, validity);
     await shouldRemoveAKAId(did, someId);
+  });
+
+  it("Should add onchain 'sigAuth' delegate", async () => {
+    const did = await newDid();
+    const validity = 86400 * 365;
+    await shouldAddSigAuthDelegate(did, validity);
+  });
+
+  it("Should add onchain 'veriKey' delegate", async () => {
+    const did = await newDid();
+    const validity = 86400 * 365;
+    await shouldAddVeriKeyDelegate(did, validity);
+  });
+
+  it("Should revoke onchain 'sigAuth' delegate", async () => {
+    const did = await newDid();
+    await shouldRevokeSigAuthDelegate(did);
+  });
+  it("Should revoke onchain 'veriKey' delegate", async () => {
+    const did = await newDid();
+    await shouldRevokeVeriKeyDelegate(did);
+  });
+
+  it("Should omit blockchain account id as attribute", async () => {
+    const did = await newDid();
+    const validity = 86400 * 365;
+    await shouldAddSigAuthDelegateAndAttributeDelegate(did, validity);
   });
 });
