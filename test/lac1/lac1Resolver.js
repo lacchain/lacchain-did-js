@@ -7,6 +7,7 @@ import {
   newLac1Did as newDid,
 } from "../testInitializer.js";
 import { processIdentifierForVmOrService } from "../../lib/lac1/lac1resolverUtils.js";
+import { shouldAddSigAuthDelegateAndAttributeDelegate } from "./lac1BaseTestMethods.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -58,5 +59,11 @@ describe("Lac1 DIDResolver", async () => {
     const retrievedIntchainId = parseInt(retrievedHexchainId, 16);
     const blockchainAccountId = `eip155:${retrievedIntchainId}:${currentController}`;
     expect(d["blockchainAccountId"]).to.eq(blockchainAccountId);
+  });
+  it("Should show multiple keys set for the same verification method", async () => {
+    const did = await newDid();
+    const validity = 86400 * 365;
+    await shouldAddSigAuthDelegateAndAttributeDelegate(did, validity, 2);
+    await shouldAddSigAuthDelegateAndAttributeDelegate(did, validity, 3);
   });
 });

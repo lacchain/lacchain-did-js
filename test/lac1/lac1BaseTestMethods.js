@@ -395,7 +395,15 @@ const shouldRevokeDelegate = async (did, delegateType) => {
   return document;
 };
 
-const shouldAddSigAuthDelegateAndAttributeDelegate = async (did, validity) => {
+const shouldAddSigAuthDelegateAndAttributeDelegate = async (
+  did,
+  validity,
+  expectedNumberofKeys
+) => {
+  if (!expectedNumberofKeys) {
+    expectedNumberofKeys = 2;
+  }
+  //************ */ add delegate ****************** //
   const delegateType = LAC1_SIG_AUTH_DELEGATE_TYPE_NAME;
   const delegateKey = createKeyPair();
   await did.addDelegate(delegateType, delegateKey.address, validity);
@@ -404,13 +412,16 @@ const shouldAddSigAuthDelegateAndAttributeDelegate = async (did, validity) => {
     did.config.chainId,
     delegateKey.address
   );
-  expect(document.verificationMethod).to.have.lengthOf(2);
+  expect(document.verificationMethod).to.have.lengthOf(expectedNumberofKeys);
+  // the last added key is the one just added
   expect(
-    document.verificationMethod[1].blockchainAccountId.toLocaleLowerCase()
+    document.verificationMethod[
+      expectedNumberofKeys - 1
+    ].blockchainAccountId.toLocaleLowerCase()
   ).to.equal(blockchainAccountId.toLocaleLowerCase());
 
   expect(document.authentication).to.not.be.null;
-  expect(document.authentication).to.have.lengthOf(2);
+  expect(document.authentication).to.have.lengthOf(expectedNumberofKeys);
 
   //************ */ add attribute ****************** //
   const authKey = delegateKey;
@@ -423,9 +434,9 @@ const shouldAddSigAuthDelegateAndAttributeDelegate = async (did, validity) => {
   });
   document = await did.getDocument();
 
-  expect(document.verificationMethod).to.have.lengthOf(2);
+  expect(document.verificationMethod).to.have.lengthOf(expectedNumberofKeys);
   expect(document.authentication).to.not.be.null;
-  expect(document.authentication).to.have.lengthOf(2);
+  expect(document.authentication).to.have.lengthOf(expectedNumberofKeys);
 };
 
 export {
