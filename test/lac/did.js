@@ -159,7 +159,7 @@ describe("LAC DID", () => {
     await shouldAddAssertionMethod(did);
   });
 
-  it("should bind and Assertion Method", async () => {
+  it("should bind an Assertion Method", async () => {
     const did = await newDid();
     await shouldBindAssertionMethod(did);
   });
